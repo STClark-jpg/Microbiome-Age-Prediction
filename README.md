@@ -36,7 +36,15 @@ Download the following WGS files from MicrobiomeDB (HMP Phase I) and place them 
 Step 1: Launch JupyterLab (From the Anaconda Navigator)
 Step 2: Open the Notebook Week1_Microbiome.ipynb
 Step 3: Run all Cells (Go to Run menu, Click Run all Cells)
-    The notebook will automatically: 1) Load both HMP WGS fiiles 2) Extract and clean the age column 3) Merge participant metadata with assay 4) Filter to adults 5) Randomly select 80 participants 6) Convert microbial counts to relative abundance 7) Remove rare bactertial features 8) Generate plots: Age distribution histogram and PCA of microbiome features (colored by age) 
+    The notebook will automatically: 
+    1) Load both HMP WGS fiiles 
+    2) Extract and clean the age column 
+    3) Merge participant metadata with assay 
+    4) Filter to adults 
+    5) Randomly select 80 participants 
+    6) Convert microbial counts to relative abundance 
+    7) Remove rare bactertial features 
+    8) Generate plots: Age distribution histogram and PCA of microbiome features (colored by age) 
 # Expected Outcome
 Running the notebook will generate two figures: 1) Age Distribution Histogram (shows age distrobution of the 80 selected adult participants) 2) PCA Colored by Age (Visualized sample clustering and age gradients in reduced dimensional space. 
 # Troubleshooting
@@ -49,7 +57,14 @@ This notebook performs no modeling. It focuses entirely on data import, cleaning
 Step 1: Launch JupyterLab (from Anaconda Navigator)
 Step 2: Open the Notebook Week2_Microbiome.ipynb
 Step 3: Run all Cells (Go to Run menu, Click Run all Cells)
-    The notebook will automatically: 1) Load participant and WGS assay files 2) Extract the "Age (year)" column 3) Merge assay table with participant age 4) Remove unusable or missing rows 5) Convert microbial features to numeric 6) Downsample to 80 adult samples 7) Filter out zero features
+    The notebook will automatically: 
+    1) Load participant and WGS assay files 
+    2) Extract the "Age (year)" column 
+    3) Merge assay table with participant age 
+    4) Remove unusable or missing rows 
+    5) Convert microbial features to numeric 
+    6) Downsample to 80 adult samples 
+    7) Filter out zero features
 # Model Training
 1) Split data into training/test sets
 2) Train Linear Regression
