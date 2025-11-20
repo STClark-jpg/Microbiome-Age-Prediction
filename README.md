@@ -18,7 +18,7 @@ Microbiome-Age-Prediction
 |Week1Notebook.pynb
 |Week2Notebook.pynb
 ## Tools/Environment
-  Python 3m10 (Anaconda)
+  Python 3.10 (Anaconda)
   pandas
   numpy
   sckit-learn
