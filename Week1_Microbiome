@@ -1,1 +1,103 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
 
+plt.rcParams["figure.figsize"] = (6, 4)
+# Load participant file (has Age, Participant_Id)
+participants = pd.read_csv(
+    "HMPWgs_Participant.txt",
+    sep="\t",
+    low_memory=False
+)
+
+# Load assay file (has bacterial abundances + Participant_Id)
+assay = pd.read_csv(
+    "HMPWgs_Metagenomic_sequencing_assay 2.txt",
+    sep="\t",
+    low_memory=False
+)
+
+print("Participant columns:\n", participants.columns, "\n")
+print("First 15 assay columns:\n", assay.columns[:15])
+# Use the exact column names from your screenshot
+pid_col = "Participant_Id"
+age_col = "Age (year) [OBI_0001169]"
+
+# Keep only ID + Age
+participants_small = participants[[pid_col, age_col]].copy()
+
+# Make sure age is numeric
+participants_small[age_col] = pd.to_numeric(participants_small[age_col], errors="coerce")
+
+# Drop rows with missing age
+participants_small = participants_small.dropna(subset=[age_col])
+
+# Keep adults (>= 18)
+adults = participants_small[participants_small[age_col] >= 18].copy()
+
+print("Adults shape:", adults.shape)
+adults.head()
+# Confirm assay also has Participant_Id
+assay_pid_cols = [c for c in assay.columns if "participant" in c.lower() and "id" in c.lower()]
+print("Assay participant ID column:", assay_pid_cols)
+
+assay_pid_col = assay_pid_cols[0]  # should be 'Participant_Id'
+
+# Merge adults with assay table
+merged = assay.merge(
+    adults,
+    left_on=assay_pid_col,
+    right_on=pid_col,
+    how="inner"
+)
+
+print("Merged shape:", merged.shape)
+merged[[assay_pid_col, age_col]].head()
+# Find columns that look like bacteria (contain the word 'bacteria')
+bacteria_cols = [c for c in merged.columns if "bacteria" in c.lower()]
+
+print("Number of bacteria columns:", len(bacteria_cols))
+print("First 10 bacteria columns:", bacteria_cols[:10])
+# Make a clean bacteria-only table
+X_raw = merged[bacteria_cols].apply(pd.to_numeric, errors="coerce").fillna(0)
+
+# Age as our target
+y_age = merged[age_col].values
+
+print("X_raw shape:", X_raw.shape)
+print("Age vector length:", len(y_age))
+# Decide how many samples to use (max 80)
+n_samples = min(80, X_raw.shape[0])
+
+# Sample rows
+sample_idx = np.random.RandomState(42).choice(X_raw.index, size=n_samples, replace=False)
+
+X_sample = X_raw.loc[sample_idx]
+y_sample = merged.loc[sample_idx, age_col].values
+
+print("Sampled X shape:", X_sample.shape)
+print("Sampled ages length:", len(y_sample))
+# Convert counts to row-wise percentages
+X_rel = X_sample.div(X_sample.sum(axis=1), axis=0).fillna(0)
+
+# Keep bacteria present in at least 5% of samples
+min_presence = int(0.05 * X_rel.shape[0])
+keep_cols = (X_rel > 0).sum(axis=0) >= min_presence
+X_filtered = X_rel.loc[:, keep_cols]
+
+print("After filtering, shape:", X_filtered.shape)
+plt.hist(y_sample, bins=10)
+plt.xlabel("Age (years)")
+plt.ylabel("Number of participants")
+plt.title("Age distribution of selected samples")
+plt.show()
+pca = PCA(n_components=2)
+scores = pca.fit_transform(X_filtered.values)
+
+plt.scatter(scores[:, 0], scores[:, 1], c=y_sample, cmap="viridis")
+plt.colorbar(label="Age (years)")
+plt.xlabel("PC1")
+plt.ylabel("PC2")
+plt.title("PCA of gut microbiome (colored by age)")
+plt.show()
