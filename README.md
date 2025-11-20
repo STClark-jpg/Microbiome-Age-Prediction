@@ -31,7 +31,7 @@ JupyterLab (recommended) or Jupyter Notebook
 Python packages (pandas, numpy, matplotlib, scikit-learn)
 You can install missing packages using: pip install pandas numpy matplotlib scikit-learn
 # Files Needed
-Download the following WGS files from MicrobiomeDB (HMP Phase I) and place them in the same directory as the notebook: 1) HMPWgs_Particpant.txt 2) HMPWgs_Metagenomic_sequencing_assay.txt
+Download the following WGS files from MicrobiomeDB (HMP Phase I) and place them in the same directory as the notebook: 1) HMPWgs_Participant.txt 2) HMPWgs_Metagenomic_sequencing_assay.txt
 # How to Run Week 1 Notebook
 Step 1: Launch JupyterLab (From the Anaconda Navigator)
 Step 2: Open the Notebook Week1_Microbiome.ipynb
