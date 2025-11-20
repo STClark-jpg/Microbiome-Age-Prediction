@@ -5,9 +5,22 @@ The workflow includes:
   Data Import (participant and assay table)
   Cleaning and filtering
   Selecting an adult-only subset (n=80)
-  Convertin counts to relative abundance
+  Converting counts to relative abundance
   Dimensionality reduction (PCA)
   Regression Modeling (Linear Regression, Random Forest)
   Evaluation with MAE and R^2
   Visualization of model predictions
-  
+## Repository Structure
+Microbiome-Age-Prediction
+|
+|-README.md
+|-Ai.Usage.md
+|Week1Notebook.pynb
+|Week2Notebook.pynb
+## Tools/Environment
+  Python 3m10 (Anaconda)
+  pandas
+	dfskdfsd
+  numpy
+  sckit-learn
+  matplotlib
