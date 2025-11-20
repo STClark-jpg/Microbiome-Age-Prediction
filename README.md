@@ -2,51 +2,55 @@
 ## Project Overview
   This project uses the HMP Phase I WGS dataset to build regression models that predict chronological age from microbial abundance profiles. The dataset includes participant level metadata (including age) and a large metagenomic sequencing table. 
 The workflow includes:
-  Data Import (participant and assay table)
-  Cleaning and filtering
-  Selecting an adult-only subset (n=80)
-  Converting counts to relative abundance
-  Dimensionality reduction (PCA)
-  Regression Modeling (Linear Regression, Random Forest)
-  Evaluation with MAE and R^2
-  Visualization of model predictions
+1) Data Import (participant and assay table)
+2) Cleaning and filtering
+3) Selecting an adult-only subset (n=80)
+4) Converting counts to relative abundance
+5) Dimensionality reduction (PCA)
+6) Regression Modeling (Linear Regression, Random Forest)
+7) Evaluation with MAE and R^2
+8) Visualization of model predictions
 ## Repository Structure
 Microbiome-Age-Prediction
 |
 |-README.md
 |-Ai.Usage.md
-|Week1Notebook.pynb
-|Week2Notebook.pynb
+|-Week1Notebook.pynb
+|-Week2Notebook.pynb
 ## Tools/Environment
-  Python 3.10 (Anaconda)
-  pandas
-  numpy
-  sckit-learn
-  matplotlib
+1) Python 3.10 (Anaconda)
+2) pandas
+3) numpy
+4) sckit-learn
+5) matplotlib
 # How to Reproduce
 ## Requirements
 This project was developed using: 
-Anaconda Distribution (Python 3.10)
-JupyterLab (recommended) or Jupyter Notebook
-Python packages (pandas, numpy, matplotlib, scikit-learn)
+1) Anaconda Distribution (Python 3.10)
+2) JupyterLab (recommended) or Jupyter Notebook
+3) Python packages (pandas, numpy, matplotlib, scikit-learn)
 You can install missing packages using: pip install pandas numpy matplotlib scikit-learn
 # Files Needed
-Download the following WGS files from MicrobiomeDB (HMP Phase I) and place them in the same directory as the notebook: 1) HMPWgs_Participant.txt 2) HMPWgs_Metagenomic_sequencing_assay.txt
+Download the following WGS files from MicrobiomeDB (HMP Phase I) and place them in the same directory as the notebook
+1) HMPWgs_Participant.txt
+2) HMPWgs_Metagenomic_sequencing_assay.txt
 # How to Run Week 1 Notebook
 Step 1: Launch JupyterLab (From the Anaconda Navigator)
 Step 2: Open the Notebook Week1_Microbiome.ipynb
 Step 3: Run all Cells (Go to Run menu, Click Run all Cells)
-    The notebook will automatically: 
-    1) Load both HMP WGS fiiles 
-    2) Extract and clean the age column 
-    3) Merge participant metadata with assay 
-    4) Filter to adults 
-    5) Randomly select 80 participants 
-    6) Convert microbial counts to relative abundance 
-    7) Remove rare bactertial features 
-    8) Generate plots: Age distribution histogram and PCA of microbiome features (colored by age) 
+The notebook will automatically
+1) Load both HMP WGS fiiles
+2) Extract and clean the age column
+3) Merge participant metadata with assay
+4) Filter to adults
+5) Randomly select 80 participants
+6) Convert microbial counts to relative abundance
+7) Remove rare bactertial features
+8) Generate plots: Age distribution histogram and PCA of microbiome features (colored by age) 
 # Expected Outcome
-Running the notebook will generate two figures: 1) Age Distribution Histogram (shows age distrobution of the 80 selected adult participants) 2) PCA Colored by Age (Visualized sample clustering and age gradients in reduced dimensional space. 
+Running the notebook will generate two figures: 
+1) Age Distribution Histogram (shows age distrobution of the 80 selected adult participants)
+2) PCA Colored by Age (Visualized sample clustering and age gradients in reduced dimensional space. 
 # Troubleshooting
 Problem: "ModuleNotFoundError: no module named pandas" (install missing modules using pip install pandas numpy matplotlib scikit-learn)
 Problem: Kernal errors in the browser (switch to Anaconda Python 3.10 kernal, not Pyodide)
@@ -57,14 +61,14 @@ This notebook performs no modeling. It focuses entirely on data import, cleaning
 Step 1: Launch JupyterLab (from Anaconda Navigator)
 Step 2: Open the Notebook Week2_Microbiome.ipynb
 Step 3: Run all Cells (Go to Run menu, Click Run all Cells)
-    The notebook will automatically: 
-    1) Load participant and WGS assay files 
-    2) Extract the "Age (year)" column 
-    3) Merge assay table with participant age 
-    4) Remove unusable or missing rows 
-    5) Convert microbial features to numeric 
-    6) Downsample to 80 adult samples 
-    7) Filter out zero features
+The notebook will automatically: 
+1) Load participant and WGS assay files
+2) Extract the "Age (year)" column
+3) Merge assay table with participant age
+4) Remove unusable or missing rows
+5) Convert microbial features to numeric
+6) Downsample to 80 adult samples
+7) Filter out zero features
 # Model Training
 1) Split data into training/test sets
 2) Train Linear Regression
@@ -73,7 +77,10 @@ Step 3: Run all Cells (Go to Run menu, Click Run all Cells)
 5) Plot True Age vs. Predicted Age
 6) Generate plots: 1) Age distribution histogram 2) PCA scatterplot of WGS microbiome features 3) Random Forest True vs. Predicted Age plot
 # Expected Outcome
-Running this notebook will generate three figures: 1) Age Distribution Histogram (shows ages of the subset of WGS participants used for modeling) 2) PCA Colored by Age (shows how WGS microbiome compositions vary across individuals) 3) Random Forest True vs. Predicted Age (scatter plot comparing model predictions to real ages) 
+Running this notebook will generate three figures: 
+1) Age Distribution Histogram (shows ages of the subset of WGS participants used for modeling)
+2) PCA Colored by Age (shows how WGS microbiome compositions vary across individuals)
+3) Random Forest True vs. Predicted Age (scatter plot comparing model predictions to real ages) 
 # Troubleshooting
 Problem: "ValueError: could not convert string to float" (some assay columns contain non numeric annotations. This notebook filters these out
 Problem: R^2 is negative (this is normal for high dimensional microbiome regression and small sample sizes
