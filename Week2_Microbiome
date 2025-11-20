@@ -1,1 +1,154 @@
+import pandas as pd
+import numpy as np
 
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_absolute_error, r2_score
+
+import matplotlib.pyplot as plt
+# Load participant table (has age)
+participants = pd.read_csv(
+    "HMPWgs_Participant.txt", 
+    sep="\t", 
+    low_memory=False
+)
+
+# Load metagenomic sequencing table (WGS features)
+assay = pd.read_csv(
+    "HMPWgs_Metagenomic_sequencing_assay 2.txt", 
+    sep="\t", 
+    low_memory=False
+)
+
+print("Participant columns:\n", participants.columns, "\n")
+print("Assay columns (first 15):\n", assay.columns[:15])
+# Make a clean Age column name
+age_col = None
+for col in participants.columns:
+    if "age" in col.lower():
+        age_col = col
+        break
+
+print("Using age column:", age_col)
+
+# Rename to simpler names
+participants_clean = participants.rename(
+    columns={
+        "Participant_Id": "participant_id",
+        age_col: "Age"
+    }
+)
+
+# Just keep ID + Age (drop other columns to keep life simple)
+participants_small = participants_clean[["participant_id", "Age"]].copy()
+
+participants_small.head()
+# Make sure the assay also uses the same ID column name
+if "Participant_Id" in assay.columns:
+    assay = assay.rename(columns={"Participant_Id": "participant_id"})
+
+# Merge on participant_id
+merged = pd.merge(assay, participants_small, on="participant_id", how="inner")
+
+print("Merged shape:", merged.shape)
+merged.head()
+# 1. Remove obviously non-feature columns
+non_feature_cols = ["participant_id", "Sample_Id", "Metagenomic_sequencing_assay_Id", "Age"]
+non_feature_cols = [c for c in non_feature_cols if c in merged.columns]
+
+feature_cols = [c for c in merged.columns if c not in non_feature_cols]
+
+print("Number of feature columns before cleaning:", len(feature_cols))
+
+X_raw = merged[feature_cols]
+y = merged["Age"]
+
+# 2. Ensure everything in X is numeric
+X_numeric = X_raw.apply(pd.to_numeric, errors="coerce")
+
+# 3. Replace NaNs with 0
+X_numeric = X_numeric.fillna(0.0)
+
+# 4. Drop columns that are completely 0 (no variation at all)
+X_numeric = X_numeric.loc[:, (X_numeric != 0).any(axis=0)]
+
+print("X_numeric shape after cleaning:", X_numeric.shape)
+print("y shape:", y.shape)
+# Downsample to about 80 people (or fewer if you have fewer rows)
+n_samples = min(80, X_numeric.shape[0])
+print("Using", n_samples, "participants for modeling.")
+
+X_sampled = X_numeric.sample(n=n_samples, random_state=42)
+y_sampled = y.loc[X_sampled.index]
+
+print("Sampled shapes:", X_sampled.shape, y_sampled.shape)
+# 1. Age distribution
+plt.hist(y_sampled, bins=10)
+plt.xlabel("Age (years)")
+plt.ylabel("Number of participants")
+plt.title("Age distribution of selected WGS samples")
+plt.show()
+
+# 2. PCA scatter plot
+from sklearn.decomposition import PCA
+
+pca = PCA(n_components=2)
+scores = pca.fit_transform(X_sampled)
+
+plt.scatter(scores[:, 0], scores[:, 1], c=y_sampled, cmap="viridis")
+plt.colorbar(label="Age (years)")
+plt.xlabel("PC1")
+plt.ylabel("PC2")
+plt.title("PCA of gut microbiome (WGS, colored by age)")
+plt.show()
+# Check we actually have data
+print("Sampled data shape:", X_sampled.shape)
+
+if X_sampled.shape[0] < 5:
+    raise ValueError("Too few samples to train a model – need at least 5 rows.")
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X_sampled,
+    y_sampled,
+    test_size=0.2,
+    random_state=42
+)
+
+print("Train shape:", X_train.shape)
+print("Test shape:", X_test.shape)
+# Linear Regression
+lr = LinearRegression()
+lr.fit(X_train, y_train)
+
+y_pred_lr = lr.predict(X_test)
+
+mae_lr = mean_absolute_error(y_test, y_pred_lr)
+r2_lr = r2_score(y_test, y_pred_lr)
+
+print("Linear Regression – MAE:", mae_lr)
+print("Linear Regression – R^2:", r2_lr)
+# Random Forest Regression
+rf = RandomForestRegressor(
+    n_estimators=200,
+    random_state=42,
+    n_jobs=-1
+)
+rf.fit(X_train, y_train)
+
+y_pred_rf = rf.predict(X_test)
+
+mae_rf = mean_absolute_error(y_test, y_pred_rf)
+r2_rf = r2_score(y_test, y_pred_rf)
+
+print("Random Forest – MAE:", mae_rf)
+print("Random Forest – R^2:", r2_rf)
+plt.scatter(y_test, y_pred_rf)
+min_age = min(y_test.min(), y_pred_rf.min())
+max_age = max(y_test.max(), y_pred_rf.max())
+plt.plot([min_age, max_age], [min_age, max_age], "k--")  # 1:1 line
+
+plt.xlabel("True age (years)")
+plt.ylabel("Predicted age (years)")
+plt.title("Random Forest – True vs Predicted Age (WGS)")
+plt.show()
