@@ -17,4 +17,5 @@ This files documents how AI tools were used during this project.
 Everything in the repository can be fully reproduced by running:
 1) Week1_Microbiome.ipynb
 2) Week2_Microbiome.ipynb
+3) Week3_Microbiome.ipynb
 These notebooks contain all data processing and modeling steps required for the project
