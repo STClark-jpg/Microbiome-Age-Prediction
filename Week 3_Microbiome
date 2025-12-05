@@ -1,1 +1,125 @@
+import pandas as pd
+import numpy as np
+from sklearn.decomposition import PCA
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_absolute_error, r2_score
+import matplotlib.pyplot as plt
 
+assay = pd.read_csv("HMPWgs_Metagenomic_sequencing_assay 2.txt", 
+                    sep="\t", 
+                    low_memory=False)
+
+participant = pd.read_csv("HMPWgs_Participant.txt",
+                          sep="\t",
+                          low_memory=False)
+
+print(participant.columns)
+print(assay.columns)
+
+participant.columns = participant.columns.str.strip()
+assay.columns = assay.columns.str.strip()
+
+id_col = [col for col in participant.columns if "Participant" in col][0]
+print("Participant ID column =", id_col)
+age_col = [col for col in participant.columns if "Age" in col][0]
+print("Age column =", age_col)
+
+if id_col in assay.columns:
+    merged = assay.merge(participant[[id_col, age_col]], on=id_col, how="left")
+else:
+    # If assay uses a different ID column
+    common_id = list(set(assay.columns).intersection(set(participant.columns)))[0]
+    merged = assay.merge(participant[[common_id, age_col]],
+                         on=common_id, how="left")
+
+merged = merged.dropna(subset=[age_col])
+
+clean = merged.copy()
+
+# Remove columns with strings like 'Y', 'N', sample names, etc.
+clean = clean.apply(pd.to_numeric, errors='coerce')
+
+# Drop columns that are nearly all NaN
+clean = clean.dropna(axis=1, thresh=int(0.2*len(clean)))
+
+clean = clean.dropna(axis=0, thresh=int(0.2*clean.shape[1]))
+
+microbe_only = clean.drop(columns=[age_col])
+mask = (microbe_only.sum(axis=1) > 0)
+clean = clean.loc[mask]
+
+clean_80 = clean.sample(n=80, random_state=42)
+
+X = clean_80.drop(columns=[age_col])
+y = clean_80[age_col]
+
+X = X.fillna(0)
+
+pca = PCA(n_components=2)
+pca_result = pca.fit_transform(X)
+
+plt.scatter(pca_result[:,0], pca_result[:,1], c=y, cmap='viridis')
+plt.colorbar(label="Age")
+plt.xlabel("PC1")
+plt.ylabel("PC2")
+plt.title("PCA – WGS Microbiome Data (80 samples)")
+plt.show()
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42)
+
+rf = RandomForestRegressor(n_estimators=300, random_state=42)
+rf.fit(X_train, y_train)
+
+pred = rf.predict(X_test)
+
+mae = mean_absolute_error(y_test, pred)
+r2 = r2_score(y_test, pred)
+
+print("MAE:", mae)
+print("R²:", r2)
+
+plt.scatter(y_test, pred)
+plt.xlabel("Actual Age")
+plt.ylabel("Predicted Age")
+plt.title("Predicted vs Actual Age")
+plt.axline((0,0),(1,1),color='red')
+plt.show()
+
+participants_small = participant[["Participant_Id", age_col]].copy()
+participants_small = participants_small.dropna()
+participants_small.head()
+
+merged = assay.merge(participants_small, on="Participant_Id", how="inner")
+print(merged.shape)
+
+# Remove columns that cannot convert to numbers (like Sample_Id, etc.)
+bacteria_cols = merged.columns[~merged.columns.isin(["Participant_Id", age_col, "Sample_Id"])]
+
+# Convert to numeric
+merged[bacteria_cols] = merged[bacteria_cols].apply(pd.to_numeric, errors="coerce")
+
+# Drop rows where all bacteria columns are NaN
+merged = merged.dropna(subset=bacteria_cols, how="all")
+
+# Fill missing counts with 0
+merged[bacteria_cols] = merged[bacteria_cols].fillna(0)
+
+print("Final merged shape:", merged.shape)
+
+merged_80 = merged.sample(n=80, random_state=42).copy()
+merged_80.shape
+
+X_filtered = merged_80[bacteria_cols].values
+y = merged_80[age_col].values
+
+pca = PCA(n_components=2)
+scores = pca.fit_transform(X_filtered)
+
+plt.scatter(scores[:,0], scores[:,1], c=y, cmap='viridis')
+plt.colorbar(label="Age (years)")
+plt.xlabel("PC1")
+plt.ylabel("PC2")
+plt.title("PCA – WGS Microbiome Data (80 samples)")
+plt.show()
