@@ -15,8 +15,9 @@ Microbiome-Age-Prediction
 |
 |-README.md
 |-Ai.Usage.md
-|-Week1Notebook.pynb
-|-Week2Notebook.pynb
+|-Week1_Microbiome.pynb
+|-Week2_Microbiome.pynb
+|-Week3_Microbiome
 ## Tools/Environment
 1) Python 3.10 (Anaconda)
 2) pandas
@@ -90,6 +91,57 @@ Problem: Files won't load (ensure filenames match exactly)
 Week 2 integrates machine learning, unlike Week 1 (only handled preprocessing and PCA)
 Random Forest model generally performs better than Linear Regression
 Week 3 will expand on hyparameter tuning and feature importance. 
+# How to Run Week 3 Notebook
+Step 1: Launch JupyterLab (from Anaconda Navigator)
+Step 2: Open the Notebook (Week3_Microbiome.ipynb)
+Step 3: Run All Cells (Go to Run menu, Click Run All Cells)
+The notebook will automatically
+1) Load all three WGS data files (Participant, Sample, and WGS assay table)
+2) Clean column names and extract participant age
+3) Merge participant metadata with microbial WGS abundance data
+4) Convert microbial counts into numeric values
+5) Drop non numeric or invalid rows that cause conversion errors
+6) Randomly select 80 adults for modeling (same adult range used in Week 1 & Week 2)
+7) Remove bactertial features that are zero across all samples
+8) Standardize microbial abundance values for PCA and modeling
+9) Generate PCA scatter plot colored by age
+10) Train a Random Forest regressor to predict age
+11) Plot predicted vs. actual age for the test set
+12) Output performance metrics (MAE and R^2)
+# Expected Outcome
+Running the notebook will generate two figures:
+1) PCA (WGS Microbiome Data (80 samples)
+Visualizes clustering based on WGS abundance features, Color gradient corresponds to participant age.
+2) Predicted vs. Actual Age (Random Forest)
+Shows how well the model predicted chronological age. A diagonal reference line is added for comparison.
+The notebook will also print:
+1) Mean Absolute Error (MAE)
+2) R^2 score
+3) Shape of the filter feature matrix
+4) Number of bacterial features retained after cleaning
+# Troubleshooting
+Problem: ValueError: could not convert strong to float
+Cause: a microbial feature column contains non numeric text like "SRS024140 (WGS)". 
+Fix: The notebook already applies:
+1) assay_numeric = assay.apply(pd.to_numeric, error='coerce')
+2) assay_numeric = assay_numeric.dropna()
+If it still appears, verify that the correct WGS assay file is used.
+Problem: PCA error - "Input X contains NaN"
+Cause: Some rows still contain NaN after cleaning.
+Fix: Esnure the notebook includes: X = X.dropna()
+Problem: "Found array with 0 samples"
+Cause: All rows were filtered out.
+Fix: Usually caused by using the wrong filename or wrong column merge key. Verify filenames:
+1) HMPWgs_Participant.txt
+2) HMPWgs_Sample.txt
+3) HMPWgs_Metagenomic_sequencing_assay.txt
+Problem: Module errors (pands, skilearn, matplotlib not found)
+Fix: Run in terminal: pip install pandas numpy matplotlib scikit-learn
+# Notes
+Week 3 focuses on final cleanup, dimensional reduction, and predictive modeling. 
+Week 1 = Data Loading and Cleaning and Filtering
+Week 2 = Modeling with early WGS dataset
+Week 3 = Final WGS only modeling pipeline
 # Data Source
 Human Microbiome Project (HMP) Phase I
 Whole Genome Shotgun (WGS) dataset
@@ -100,4 +152,4 @@ scikit-learn Developers (2024). https://scikit-learn.org
 # Status
 Week 1 complete (data cleaning and PCA)
 Week 2 complete (regression modeling)
-Week 3 in progress (feature importance and tuning) 
+Week 3 complete (tuning) /unfinished (feature inportance) due to error encountered 
